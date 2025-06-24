@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from tnn_modules import TernaryConv2d, TernaryLinear
 
 class BasicBlockTNN(nn.Module):
@@ -9,7 +10,7 @@ class BasicBlockTNN(nn.Module):
         super(BasicBlockTNN, self).__init__()
         self.conv1 = TernaryConv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = TernaryConv2d(planes, planes, kernel_size=3, strdie=1, padding=1, bias = False)
+        self.conv2 = TernaryConv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias = False)
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.shortcut = nn.Sequential()
