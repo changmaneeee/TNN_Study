@@ -8,18 +8,18 @@ import numpy as np
 
 def ternarize(tensor):
     """
-    Ternarize the input tensor to -1, 0, 1 based on the threshold.
-    If |W_ij| < delta_i, then W_ij_t = 0
-    If W_ij >= delta_i, then W_ij_t = +alpha_i
-    If W_ij <= -delta_i, then W_ij_t = -alpha_i
+        Ternarize the input tensor to -1, 0, 1 based on the threshold.
+        If |W_ij| < delta_i, then W_ij_t = 0
+        If W_ij >= delta_i, then W_ij_t = +alpha_i
+        If W_ij <= -delta_i, then W_ij_t = -alpha_i
     """
-   output = torch.zeros_linke(tensor)
-   delta = 0.7*tensor.avs().mean() # Threshold for ternarization
+    output = torch.zeros_linke(tensor)
+    delta = 0.7*tensor.avs().mean() # Threshold for ternarization
 
-   output[tensor > delta] = 1
-   output[tensor < -delta] = -1
+    output[tensor > delta] = 1
+    output[tensor < -delta] = -1
 
-   return output
+    return output
 
 
 class TernaryQuantizeSTE(torch.autograd.Function):
@@ -58,5 +58,15 @@ class TernaryLinear(nn.Linear):
         ternary_weight = TernaryQuantizeSTE.apply(self.weight_fp)
         output = F.linear(x, ternary_weight, self.bias)
         return output
-        
+
+    def reset_parameters(self): 
+        super().reset_parameters()
+        if hasattr(self, 'weight_fp'):
+            self.weight_fp.data = self.weight.data.clone()
+
+def clip_weights(model, min_val=-1.0, max_val=1.0):
+    for module in model.modules():
+        if isinstance(module, (TernaryConv2d, TernaryLinear)):
+            module.weight_fp.data.clamp_(min_val, max_val)
+            
 
